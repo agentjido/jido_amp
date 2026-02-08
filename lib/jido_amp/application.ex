@@ -1,6 +1,4 @@
-defmodule JidoAmp.Application do
-  # See https://hexdocs.pm/elixir/Application.html
-  # for more information on OTP Applications
+defmodule Jido.Amp.Application do
   @moduledoc false
 
   use Application
@@ -8,13 +6,11 @@ defmodule JidoAmp.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: JidoAmp.Worker.start_link(arg)
-      # {JidoAmp.Worker, arg}
+      # Supervisor tree for Jido.Amp components
+      # Add supervised processes here as needed
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: JidoAmp.Supervisor]
+    opts = [strategy: :one_for_one, name: Jido.Amp.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end
