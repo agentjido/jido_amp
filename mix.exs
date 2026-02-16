@@ -1,9 +1,9 @@
-defmodule JidoAmp.MixProject do
+defmodule Jido.Amp.MixProject do
   use Mix.Project
 
   @version "0.1.0"
   @source_url "https://github.com/agentjido/jido_amp"
-  @description "Amplified AI orchestration for the Jido ecosystem"
+  @description "Amp CLI agent integration for the Jido ecosystem"
 
   def project do
     [
@@ -14,7 +14,6 @@ defmodule JidoAmp.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
-      # Documentation
       name: "Jido.Amp",
       source_url: @source_url,
       homepage_url: @source_url,
@@ -23,19 +22,48 @@ defmodule JidoAmp.MixProject do
         extras: ["README.md", "CHANGELOG.md", "guides/getting-started.md"],
         formatters: ["html"]
       ],
-      # Hex packaging
+      dialyzer: [
+        plt_add_apps: [:mix]
+      ],
+      test_coverage: [
+        tool: ExCoveralls,
+        summary: [threshold: 90]
+      ],
+      description: @description,
       package: [
         name: :jido_amp,
+        description: @description,
+        files: [
+          ".formatter.exs",
+          "CHANGELOG.md",
+          "CONTRIBUTING.md",
+          "LICENSE",
+          "README.md",
+          "config",
+          "guides",
+          "lib",
+          "mix.exs",
+          "usage-rules.md"
+        ],
         licenses: ["Apache-2.0"],
         links: %{"GitHub" => @source_url}
       ]
     ]
   end
 
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.github": :test,
+        "coveralls.html": :test
+      ]
+    ]
+  end
+
   def application do
     [
-      extra_applications: [:logger],
-      mod: {Jido.Amp.Application, []}
+      extra_applications: [:logger]
     ]
   end
 
@@ -43,14 +71,21 @@ defmodule JidoAmp.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
+    runtime_deps() ++ dev_test_deps()
+  end
+
+  defp runtime_deps do
     [
-      # Core ecosystem
+      {:jido, "~> 2.0.0-rc.5"},
+      {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
       {:zoi, "~> 0.16"},
       {:splode, "~> 0.3"},
-      {:req_llm, github: "agentjido/req_llm", branch: "main"},
-      {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
+      {:jason, "~> 1.4"}
+    ]
+  end
 
-      # Dev/Test
+  defp dev_test_deps do
+    [
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.31", only: :dev, runtime: false},
@@ -65,7 +100,7 @@ defmodule JidoAmp.MixProject do
     [
       setup: ["deps.get"],
       quality: [
-        "compile",
+        "compile --warnings-as-errors",
         "format --check-formatted",
         "credo --strict",
         "dialyzer",

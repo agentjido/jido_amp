@@ -1,98 +1,112 @@
 # Jido.Amp
 
-Amplified AI orchestration for the Jido ecosystem. Provides tools and agents for orchestrating complex AI workflows using the Amp coding agent SDK.
+`Jido.Amp` integrates the Amp CLI SDK (`amp_sdk`) with Jido.
 
-## Features
-
-- **Amp SDK Integration** - Define and execute orchestration workflows with the Amp agent framework
-- **Tool Orchestration** - Manage tool definitions, execution, and context
-- **Error Handling** - Structured error composition with Splode
-- **Schema Validation** - Zoi-based validation for all data structures
-- **Ecosystem Integration** - Built for the Jido ecosystem alongside jido, jido_action, jido_signal, and more
+It provides:
+- Fail-fast streaming compatibility checks for `amp_sdk` (`--execute --stream-json`)
+- A Jido agent (`Jido.Amp.Agent`) for Amp session lifecycle and stream signal routing
+- A curated top-level API in `Jido.Amp`
+- Full Amp management parity via namespaced modules (`Jido.Amp.Threads`, `Jido.Amp.Tools`, etc.)
+- Mix tasks for install/compatibility/thread execution
 
 ## Installation
 
-Add to your `mix.exs`:
-
 ```elixir
-def deps do
+defp deps do
   [
     {:jido_amp, "~> 0.1.0"}
   ]
 end
 ```
 
-Then run:
+Then:
 
 ```bash
 mix deps.get
 ```
 
+## Requirements
+
+- Elixir `~> 1.18`
+- Amp CLI installed and authenticated
+- Amp CLI support for streaming flags required by `amp_sdk`:
+  - `--execute`
+  - `--stream-json`
+
 ## Quick Start
 
+### 1) Verify CLI setup
+
+```bash
+mix amp.install
+mix amp.compat
+```
+
+### 2) Run a prompt (blocking)
+
 ```elixir
-# Define a tool
-tool = %{
-  name: "my_tool",
-  description: "Does something useful",
-  input_schema: %{
-    "type" => "object",
-    "properties" => %{
-      "param" => %{"type" => "string"}
-    }
-  }
-}
-
-# Execute with Amp orchestrator
-{:ok, result} = Jido.Amp.Orchestrator.execute(tool, %{"param" => "value"})
+{:ok, result} =
+  Jido.Amp.run("Summarize the failing tests and propose a fix", cwd: "/path/to/project")
 ```
 
-## Documentation
+### 3) Stream messages
 
-- [API Documentation](https://hexdocs.pm/jido_amp)
-- [Getting Started Guide](guides/getting-started.md)
-- [Contributing](CONTRIBUTING.md)
-
-## Architecture
-
+```elixir
+Jido.Amp.execute("Refactor this module", cwd: "/path/to/project")
+|> Enum.each(&IO.inspect/1)
 ```
-Jido.Amp
-├── Orchestrator      # Core tool execution engine
-├── Tool              # Tool definition and management
-├── Error             # Error handling (Splode-based)
-└── Application       # Supervisor and startup
+
+## Agent Runtime
+
+`Jido.Amp.Agent` routes:
+- `"amp.session.start"` -> `Jido.Amp.Actions.StartSession`
+- `"amp.internal.message"` -> `Jido.Amp.Actions.HandleMessage`
+
+Example session start signal:
+
+```elixir
+signal = Jido.Amp.Signal.session_start("Fix this bug", cwd: "/path/to/project")
 ```
+
+Emitted session/turn signals include:
+- `amp.session.started`
+- `amp.turn.text`
+- `amp.turn.thinking`
+- `amp.turn.tool_use`
+- `amp.turn.tool_result`
+- `amp.session.completed`
+- `amp.session.error`
+
+## API Layout
+
+Curated top-level API (`Jido.Amp`):
+- `run/2`, `execute/2`
+- `threads_list/1`, `threads_search/2`, `threads_markdown/1`
+- `tools_list/0`
+- `permissions_list/1`
+- `mcp_list/1`
+- `usage/0`
+
+Full management API (namespaced):
+- `Jido.Amp.Threads`
+- `Jido.Amp.Tools`
+- `Jido.Amp.Permissions`
+- `Jido.Amp.MCP`
+- `Jido.Amp.Tasks`
+- `Jido.Amp.Review`
+- `Jido.Amp.Skills`
+
+## Mix Tasks
+
+- `mix amp.install` - check CLI install and print setup guidance
+- `mix amp.compat` - validate streaming compatibility
+- `mix amp.thread THREAD_ID "PROMPT" [options]` - execute directly against an existing thread
 
 ## Development
 
 ```bash
-# Setup
-mix setup
-
-# Tests
-mix test              # Run tests
-mix test --cover      # With coverage report
-
-# Quality checks
-mix quality           # All checks: format, credo, dialyzer, doctor
-mix docs              # Generate documentation
+mix test
+mix quality
 ```
 
-## Project Status
-
-🧪 **Experimental** - This is an early-stage project spiking integration with the Amp SDK. APIs may change as we refine the orchestration patterns.
-
-## License
-
-Apache License 2.0
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and workflow.
-
-## Related Projects
-
-- [Amp SDK](https://github.com/nshkrdotcom/amp_sdk) - Coding agent framework
-- [Jido](https://github.com/agentjido/jido) - Agent execution framework
-- [Jido Action](https://github.com/agentjido/jido_action) - Action definitions
-- [Jido Signal](https://github.com/agentjido/jido_signal) - Signal handling
+See `guides/getting-started.md` for a complete usage walkthrough.

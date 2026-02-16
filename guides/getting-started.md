@@ -1,10 +1,14 @@
 # Getting Started with Jido.Amp
 
-Jido.Amp provides amplified AI orchestration for the Jido ecosystem. This guide walks you through the basics of defining and executing tools.
+This guide covers the main `Jido.Amp` flows:
+- Compatibility checks
+- Blocking and streaming execution
+- Agent/session signal flow
+- Thread execution from CLI
 
-## Installation
+## 1. Install and Verify
 
-Add Jido.Amp to your `mix.exs`:
+Add dependency:
 
 ```elixir
 defp deps do
@@ -14,191 +18,89 @@ defp deps do
 end
 ```
 
-Then run:
+Fetch deps:
 
 ```bash
 mix deps.get
 ```
 
-## Basic Usage
+Verify Amp CLI and compatibility:
 
-### Define a Tool
-
-Tools are defined as maps following the Amp SDK specification:
-
-```elixir
-tool = %{
-  "name" => "search",
-  "description" => "Search for information",
-  "input_schema" => %{
-    "type" => "object",
-    "properties" => %{
-      "query" => %{"type" => "string", "description" => "Search query"},
-      "limit" => %{"type" => "integer", "description" => "Max results"}
-    },
-    "required" => ["query"]
-  }
-}
+```bash
+mix amp.install
+mix amp.compat
 ```
 
-### Execute the Tool
+## 2. Run Prompts
 
-Use the orchestrator to execute:
-
-```elixir
-{:ok, result} = Jido.Amp.Orchestrator.execute(tool, %{"query" => "elixir", "limit" => 10})
-```
-
-## Working with Tool Structs
-
-For more advanced usage, work directly with the `Jido.Amp.Tool` module:
+Blocking:
 
 ```elixir
-# Create a validated tool struct
-{:ok, my_tool} = Jido.Amp.Tool.new(%{
-  "name" => "my_tool",
-  "description" => "Does something",
-  "input_schema" => %{...}
-})
-
-# Validate input
-:ok = Jido.Amp.Tool.validate(my_tool, %{"param" => "value"})
-
-# Execute via orchestrator
-{:ok, result} = Jido.Amp.Orchestrator.execute(my_tool, %{"param" => "value"})
+{:ok, result} = Jido.Amp.run("Explain why tests are failing", cwd: "/repo")
 ```
 
-## Error Handling
-
-All errors are structured using Splode. Catch specific error types:
+Streaming:
 
 ```elixir
-case Jido.Amp.Orchestrator.execute(tool, input) do
-  {:ok, result} ->
-    IO.inspect(result)
-
-  {:error, %Jido.Amp.Error.InvalidInputError{} = error} ->
-    IO.puts("Invalid input: #{error.message}")
-
-  {:error, %Jido.Amp.Error.ExecutionFailureError{} = error} ->
-    IO.puts("Execution failed: #{error.message}")
-
-  {:error, other} ->
-    IO.puts("Unexpected error: #{inspect(other)}")
-end
+Jido.Amp.execute("Fix these tests", cwd: "/repo")
+|> Enum.each(&IO.inspect/1)
 ```
 
-## Advanced: Execution Context
+If compatibility fails, `run/2` returns a config error and `execute/2` raises `Jido.Amp.Error.ConfigError`.
 
-Include context for complex orchestrations:
+## 3. Work with Threads and Management APIs
+
+Curated top-level operations:
 
 ```elixir
-context = %{
-  "session_id" => "abc123",
-  "user_id" => "user_456"
-}
-
-{:ok, result} = Jido.Amp.Orchestrator.execute_with_context(
-  tool,
-  %{"param" => "value"},
-  context
-)
+{:ok, threads} = Jido.Amp.threads_list(limit: 20)
+{:ok, markdown} = Jido.Amp.threads_markdown("th_123")
 ```
 
-## Advanced: Custom Options
-
-Control execution behavior:
+Advanced operations via namespaced modules:
 
 ```elixir
-opts = [
-  timeout: 10000,  # 10 second timeout
-  retry: 3         # Retry up to 3 times
-]
-
-{:ok, result} = Jido.Amp.Orchestrator.execute(tool, input, opts)
+{:ok, _} = Jido.Amp.Threads.rename("th_123", "New title")
+{:ok, _} = Jido.Amp.Tools.show("Read")
+{:ok, _} = Jido.Amp.Permissions.add("Read", "allow", to: "workspace")
+{:ok, _} = Jido.Amp.MCP.list()
+{:ok, _} = Jido.Amp.Tasks.list()
+{:ok, _} = Jido.Amp.Review.run()
+{:ok, _} = Jido.Amp.Skills.list()
 ```
 
-## Integration with Jido
+## 4. Use the Agent Runtime
 
-Jido.Amp is designed to work seamlessly with other Jido ecosystem packages:
+`Jido.Amp.Agent` handles an Amp session lifecycle with typed signals.
 
-- **Jido** - Agent execution framework
-- **Jido.Action** - Action definitions and handlers
-- **Jido.Signal** - Signal-based communication
-- **Jido.AI** - AI-powered capabilities
-
-## Next Steps
-
-- Check out the [API Documentation](https://hexdocs.pm/jido_amp)
-- Review [AGENTS.md](../AGENTS.md) for development patterns
-- See [CONTRIBUTING.md](../CONTRIBUTING.md) for contributing guidelines
-
-## Examples
-
-### Search Tool
+Start signal:
 
 ```elixir
-defmodule MyApp.Tools.Search do
-  def spec do
-    %{
-      "name" => "search",
-      "description" => "Search the web",
-      "input_schema" => %{
-        "type" => "object",
-        "properties" => %{
-          "query" => %{"type" => "string"}
-        },
-        "required" => ["query"]
-      }
-    }
-  end
-
-  def search(query, limit \\ 10) do
-    # Implementation here
-    {:ok, []}
-  end
-end
-
-# Usage
-tool = MyApp.Tools.Search.spec()
-{:ok, results} = Jido.Amp.Orchestrator.execute(tool, %{"query" => "elixir"})
+signal = Jido.Amp.Signal.session_start("Refactor this file", cwd: "/repo")
 ```
 
-### Database Tool
+Key emitted signals:
+- `amp.session.started`
+- `amp.turn.text`
+- `amp.turn.thinking`
+- `amp.turn.tool_use`
+- `amp.turn.tool_result`
+- `amp.session.completed`
+- `amp.session.error`
 
-```elixir
-defmodule MyApp.Tools.Database do
-  def query_spec do
-    %{
-      "name" => "db_query",
-      "description" => "Execute a database query",
-      "input_schema" => %{
-        "type" => "object",
-        "properties" => %{
-          "sql" => %{"type" => "string"},
-          "params" => %{"type" => "array", "items" => %{"type" => "string"}}
-        },
-        "required" => ["sql"]
-      }
-    }
-  end
-end
+## 5. Run Against an Existing Thread from CLI
+
+```bash
+mix amp.thread THREAD_ID "Continue with a fix" --cwd /repo --timeout 120000
 ```
 
-## Troubleshooting
+This uses direct CLI execution mode and remains available even when streaming compatibility is unresolved.
 
-### InvalidInputError
+## 6. Test and Quality
 
-Input doesn't match the tool's schema. Check the `input_schema` definition and verify your input matches.
+```bash
+mix test
+mix quality
+```
 
-### ExecutionFailureError
-
-The tool failed to execute. Check logs and the error details for the specific cause.
-
-### ConfigError
-
-Required configuration is missing. Ensure your environment is properly configured.
-
-## Questions?
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) or open an issue on GitHub.
+Integration tests are opt-in (`@tag :integration`) and excluded from default test runs.

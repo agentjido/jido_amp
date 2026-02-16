@@ -14,7 +14,7 @@ defmodule Jido.Amp.Error do
   ## Examples
 
       iex> Jido.Amp.Error.validation_error("Email is required", %{field: "email"})
-      %Jido.Amp.Error.InvalidInputError{message: "Email is required", field: "email"}
+      %Jido.Amp.Error.InvalidInputError{message: "Email is required", field: "email", value: nil, details: nil}
 
       iex> Jido.Amp.Error.execution_error("Tool failed", %{tool: "my_tool"})
       %Jido.Amp.Error.ExecutionFailureError{message: "Tool failed", details: %{tool: "my_tool"}}
@@ -63,6 +63,13 @@ defmodule Jido.Amp.Error do
 
     Raised when input validation fails or required fields are missing.
     """
+    @type t :: %__MODULE__{
+            message: String.t() | nil,
+            field: term(),
+            value: term(),
+            details: term()
+          }
+
     defexception [:message, :field, :value, :details]
 
     @impl true
@@ -75,6 +82,11 @@ defmodule Jido.Amp.Error do
 
     Raised when tool execution, orchestration, or other runtime operations fail.
     """
+    @type t :: %__MODULE__{
+            message: String.t() | nil,
+            details: term()
+          }
+
     defexception [:message, :details]
 
     @impl true
@@ -87,6 +99,12 @@ defmodule Jido.Amp.Error do
 
     Raised when required configuration is missing or invalid.
     """
+    @type t :: %__MODULE__{
+            message: String.t() | nil,
+            key: term(),
+            details: term()
+          }
+
     defexception [:message, :key, :details]
 
     @impl true
@@ -101,7 +119,7 @@ defmodule Jido.Amp.Error do
   ## Examples
 
       iex> Jido.Amp.Error.validation_error("Required field missing", %{field: "name"})
-      %Jido.Amp.Error.InvalidInputError{message: "Required field missing", details: %{field: "name"}}
+      %Jido.Amp.Error.InvalidInputError{message: "Required field missing", field: "name", value: nil, details: nil}
   """
   @spec validation_error(String.t(), map()) :: InvalidInputError.t()
   def validation_error(message, details \\ %{}) do
