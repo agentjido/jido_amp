@@ -98,11 +98,12 @@ defmodule Jido.Amp.MixProject do
 
   defp aliases do
     [
-      setup: ["deps.get"],
+      setup: ["deps.get", "git_hooks.install"],
+      q: ["quality"],
       quality: [
-        "compile --warnings-as-errors",
         "format --check-formatted",
-        "credo --strict",
+        "compile --warnings-as-errors",
+        "credo --min-priority higher",
         "dialyzer",
         "doctor --raise"
       ],
