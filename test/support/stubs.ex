@@ -12,6 +12,10 @@ defmodule Jido.Amp.Test.StubCommand do
   def run(args, opts \\ []) do
     Application.get_env(:jido_amp, :stub_command_run, fn _args, _opts -> {:ok, ""} end).(args, opts)
   end
+
+  def run(_spec, args, opts) do
+    run(args, opts)
+  end
 end
 
 defmodule Jido.Amp.Test.StubAmpSdk do
@@ -83,8 +87,18 @@ end
 defmodule Jido.Amp.Test.StubAmpModule do
   @moduledoc false
 
-  def cli_installed? do
+  def cli_installed?(_opts \\ []) do
     Application.get_env(:jido_amp, :stub_amp_cli_installed?, true)
+  end
+end
+
+defmodule Jido.Amp.Test.StubInstaller do
+  @moduledoc false
+
+  def ensure_installed(opts \\ []) do
+    Application.get_env(:jido_amp, :stub_ensure_installed, fn _opts ->
+      {:ok, %{status: :already_installed, program: "/tmp/amp"}}
+    end).(opts)
   end
 end
 

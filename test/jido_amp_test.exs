@@ -13,6 +13,8 @@ defmodule Jido.AmpTest do
     old_command_run = Application.get_env(:jido_amp, :stub_command_run)
     old_amp_run = Application.get_env(:jido_amp, :stub_amp_sdk_run)
     old_amp_execute = Application.get_env(:jido_amp, :stub_amp_sdk_execute)
+    old_amp_cli_path = Application.get_env(:jido_amp, :amp_cli_path)
+    old_amp_cli_path_env = System.get_env("AMP_CLI_PATH")
 
     Application.put_env(:jido_amp, :amp_sdk_module, StubAmpSdk)
     Application.put_env(:jido_amp, :amp_cli_module, StubCLI)
@@ -33,6 +35,13 @@ defmodule Jido.AmpTest do
       restore_env(:jido_amp, :stub_command_run, old_command_run)
       restore_env(:jido_amp, :stub_amp_sdk_run, old_amp_run)
       restore_env(:jido_amp, :stub_amp_sdk_execute, old_amp_execute)
+      restore_env(:jido_amp, :amp_cli_path, old_amp_cli_path)
+
+      if is_binary(old_amp_cli_path_env) do
+        System.put_env("AMP_CLI_PATH", old_amp_cli_path_env)
+      else
+        System.delete_env("AMP_CLI_PATH")
+      end
     end)
 
     :ok
@@ -54,6 +63,16 @@ defmodule Jido.AmpTest do
     test "returns false when CLI resolution fails" do
       Application.put_env(:jido_amp, :stub_cli_resolve, fn -> {:error, :enoent} end)
       assert Jido.Amp.cli_installed?() == false
+    end
+
+    test "passes runtime path override to cli resolution" do
+      Application.put_env(:jido_amp, :stub_cli_resolve, fn ->
+        assert System.get_env("AMP_CLI_PATH") == "/custom/amp"
+        {:ok, %{program: "/custom/amp"}}
+      end)
+
+      assert Jido.Amp.cli_installed?(amp_cli_path: "/custom/amp") == true
+      assert System.get_env("AMP_CLI_PATH") == nil
     end
   end
 
@@ -111,6 +130,30 @@ defmodule Jido.AmpTest do
       assert_receive {:stub_execute_called, "stream it", %AmpSdk.Types.Options{} = options}
       assert options.mode == "smart"
       assert [%AmpSdk.Types.ResultMessage{result: "done"}] = messages
+    end
+
+    test "run/2 applies app-configured amp_cli_path deterministically" do
+      Application.put_env(:jido_amp, :amp_cli_path, "/configured/amp")
+
+      Application.put_env(:jido_amp, :stub_amp_sdk_run, fn _prompt, _options ->
+        send(self(), {:amp_cli_path_during_run, System.get_env("AMP_CLI_PATH")})
+        {:ok, "done"}
+      end)
+
+      assert {:ok, "done"} = Jido.Amp.run("ship it")
+      assert_receive {:amp_cli_path_during_run, "/configured/amp"}
+      assert System.get_env("AMP_CLI_PATH") == nil
+    end
+
+    test "run/2 accepts per-call amp_cli_path override" do
+      Application.put_env(:jido_amp, :stub_amp_sdk_run, fn _prompt, _options ->
+        send(self(), {:amp_cli_path_during_run, System.get_env("AMP_CLI_PATH")})
+        {:ok, "done"}
+      end)
+
+      assert {:ok, "done"} = Jido.Amp.run("ship it", amp_cli_path: "/runtime/amp")
+      assert_receive {:amp_cli_path_during_run, "/runtime/amp"}
+      assert System.get_env("AMP_CLI_PATH") == nil
     end
   end
 

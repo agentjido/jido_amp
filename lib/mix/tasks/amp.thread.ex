@@ -16,6 +16,8 @@ defmodule Mix.Tasks.Amp.Thread do
 
   use Mix.Task
 
+  alias Jido.Amp.CLI
+
   @switches [
     cwd: :string,
     timeout: :integer,
@@ -64,9 +66,15 @@ defmodule Mix.Tasks.Amp.Thread do
 
     Mix.shell().info(["Executing thread ", :cyan, thread_id, :reset, "..."])
 
-    case command_module().run(cmd_args, run_opts) do
-      {:ok, result} ->
-        Mix.shell().info(result)
+    case CLI.resolve() do
+      {:ok, spec} ->
+        case run_command(spec, cmd_args, run_opts) do
+          {:ok, result} ->
+            Mix.shell().info(result)
+
+          {:error, reason} ->
+            Mix.raise("Amp thread execution failed: #{format_error(reason)}")
+        end
 
       {:error, reason} ->
         Mix.raise("Amp thread execution failed: #{format_error(reason)}")
@@ -106,5 +114,17 @@ defmodule Mix.Tasks.Amp.Thread do
 
   defp command_module do
     Application.get_env(:jido_amp, :amp_command_module, AmpSdk.Command)
+  end
+
+  defp run_command(spec, args, opts) do
+    cond do
+      function_exported?(command_module(), :run, 3) ->
+        command_module().run(spec, args, opts)
+
+      true ->
+        CLI.with_amp_cli_path(Application.get_env(:jido_amp, :amp_cli_path), fn ->
+          command_module().run(args, opts)
+        end)
+    end
   end
 end

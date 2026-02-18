@@ -3,20 +3,23 @@ defmodule Mix.Tasks.AmpTasksTest do
 
   import ExUnit.CaptureIO
 
-  alias Jido.Amp.Test.{StubAmpModule, StubCLI, StubCommand}
+  alias Jido.Amp.Test.{StubAmpModule, StubCLI, StubCommand, StubInstaller}
   alias Mix.Tasks.Amp.{Compat, Install, Thread}
 
   setup do
     old_amp_module = Application.get_env(:jido_amp, :amp_module)
     old_cli_module = Application.get_env(:jido_amp, :amp_cli_module)
     old_command_module = Application.get_env(:jido_amp, :amp_command_module)
+    old_install_module = Application.get_env(:jido_amp, :amp_install_module)
     old_amp_cli_installed = Application.get_env(:jido_amp, :stub_amp_cli_installed?)
     old_cli_resolve = Application.get_env(:jido_amp, :stub_cli_resolve)
     old_command_run = Application.get_env(:jido_amp, :stub_command_run)
+    old_ensure_installed = Application.get_env(:jido_amp, :stub_ensure_installed)
 
     Application.put_env(:jido_amp, :amp_module, StubAmpModule)
     Application.put_env(:jido_amp, :amp_cli_module, StubCLI)
     Application.put_env(:jido_amp, :amp_command_module, StubCommand)
+    Application.put_env(:jido_amp, :amp_install_module, StubInstaller)
     Application.put_env(:jido_amp, :stub_amp_cli_installed?, true)
 
     Application.put_env(:jido_amp, :stub_cli_resolve, fn -> {:ok, %{program: "/tmp/amp"}} end)
@@ -25,13 +28,19 @@ defmodule Mix.Tasks.AmpTasksTest do
       {:ok, "ok"}
     end)
 
+    Application.put_env(:jido_amp, :stub_ensure_installed, fn _opts ->
+      {:ok, %{status: :already_installed, program: "/tmp/amp"}}
+    end)
+
     on_exit(fn ->
       restore_env(:jido_amp, :amp_module, old_amp_module)
       restore_env(:jido_amp, :amp_cli_module, old_cli_module)
       restore_env(:jido_amp, :amp_command_module, old_command_module)
+      restore_env(:jido_amp, :amp_install_module, old_install_module)
       restore_env(:jido_amp, :stub_amp_cli_installed?, old_amp_cli_installed)
       restore_env(:jido_amp, :stub_cli_resolve, old_cli_resolve)
       restore_env(:jido_amp, :stub_command_run, old_command_run)
+      restore_env(:jido_amp, :stub_ensure_installed, old_ensure_installed)
     end)
 
     :ok
@@ -54,6 +63,25 @@ defmodule Mix.Tasks.AmpTasksTest do
 
       assert output =~ "Amp compatibility check passed"
       assert output =~ "2.0.0"
+    end
+
+    test "passes --path override to compatibility checks" do
+      Application.put_env(:jido_amp, :stub_cli_resolve, fn ->
+        assert System.get_env("AMP_CLI_PATH") == "/custom/amp"
+        {:ok, %{program: "/custom/amp"}}
+      end)
+
+      Application.put_env(:jido_amp, :stub_command_run, fn
+        ["--help"], _opts -> {:ok, "amp --execute --stream-json"}
+        ["--version"], _opts -> {:ok, "2.0.0"}
+        _args, _opts -> {:ok, "ok"}
+      end)
+
+      Mix.Task.reenable("amp.compat")
+      output = capture_io(fn -> Compat.run(["--path", "/custom/amp"]) end)
+
+      assert output =~ "Amp compatibility check passed"
+      assert output =~ "/custom/amp"
     end
 
     test "raises on compatibility failure" do
@@ -82,8 +110,10 @@ defmodule Mix.Tasks.AmpTasksTest do
       assert output =~ "/tmp/amp"
     end
 
-    test "prints install instructions when amp is missing" do
-      Application.put_env(:jido_amp, :stub_cli_resolve, fn -> {:error, :enoent} end)
+    test "installs amp when missing" do
+      Application.put_env(:jido_amp, :stub_ensure_installed, fn _opts ->
+        {:ok, %{status: :installed, program: "/tmp/amp", install_prefix: "/tmp"}}
+      end)
 
       Mix.Task.reenable("amp.install")
 
@@ -92,8 +122,34 @@ defmodule Mix.Tasks.AmpTasksTest do
           Install.run([])
         end)
 
-      assert output =~ "Amp CLI not found"
-      assert output =~ "mix amp.install"
+      assert output =~ "Amp CLI installed"
+      assert output =~ "/tmp/amp"
+    end
+
+    test "passes --path override to installer module" do
+      Application.put_env(:jido_amp, :stub_ensure_installed, fn opts ->
+        send(self(), {:ensure_installed_opts, opts})
+        {:ok, %{status: :already_installed, program: "/tmp/amp"}}
+      end)
+
+      Mix.Task.reenable("amp.install")
+      _ = capture_io(fn -> Install.run(["--path", "/custom/amp"]) end)
+      assert_receive {:ensure_installed_opts, opts}
+      assert opts[:amp_cli_path] == "/custom/amp"
+    end
+
+    test "raises when installer fails" do
+      Application.put_env(:jido_amp, :stub_ensure_installed, fn _opts ->
+        {:error, Jido.Amp.Error.config_error("install failed", %{key: :amp_cli_install_failed})}
+      end)
+
+      Mix.Task.reenable("amp.install")
+
+      assert_raise Mix.Error, ~r/Amp install failed/, fn ->
+        capture_io(fn ->
+          Install.run([])
+        end)
+      end
     end
   end
 
