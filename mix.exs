@@ -78,10 +78,19 @@ defmodule Jido.Amp.MixProject do
     [
       {:jido, "~> 2.0.0-rc.5"},
       {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
+      harness_dep(),
       {:zoi, "~> 0.16"},
-      {:splode, "~> 0.3"},
+      {:splode, ">= 0.2.9 and < 0.4.0"},
       {:jason, "~> 1.4"}
     ]
+  end
+
+  defp harness_dep do
+    if File.dir?("../jido_harness") do
+      {:jido_harness, "~> 0.1", path: "../jido_harness", override: true}
+    else
+      {:jido_harness, "~> 0.1"}
+    end
   end
 
   defp dev_test_deps do
