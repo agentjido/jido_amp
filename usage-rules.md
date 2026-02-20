@@ -11,23 +11,9 @@ This file captures implementation constraints and expected patterns.
 
 ## API Surface
 
-- Keep `Jido.Amp` curated.
-- Expose advanced operations via namespaced modules:
-  - `Jido.Amp.Threads`
-  - `Jido.Amp.Tools`
-  - `Jido.Amp.Permissions`
-  - `Jido.Amp.MCP`
-  - `Jido.Amp.Tasks`
-  - `Jido.Amp.Review`
-  - `Jido.Amp.Skills`
-
-## Signal Model
-
-- Use `Jido.Amp.Signal` custom typed signals.
-- Required routing in `Jido.Amp.Agent.signal_routes/1`:
-  - `"amp.session.start"` -> `Jido.Amp.Actions.StartSession`
-  - `"amp.internal.message"` -> `Jido.Amp.Actions.HandleMessage`
-- Preserve support for existing signal types while extending behavior.
+- Keep `Jido.Amp` adapter-focused.
+- Public APIs should remain scoped to execution (`run/2`, `execute/2`) and runtime diagnostics/install.
+- Do not add broad provider management wrappers or embedded session frameworks.
 
 ## Validation and Errors
 
@@ -38,7 +24,7 @@ This file captures implementation constraints and expected patterns.
 ## Testing
 
 - Coverage must remain >=90%.
-- Unit-test wrappers/delegates and compatibility logic with injected stubs.
+- Unit-test adapter behavior and compatibility logic with injected stubs.
 - Keep live CLI/account tests tagged as `@tag :integration` and opt-in.
 
 ## Tooling and Quality

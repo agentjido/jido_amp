@@ -3,7 +3,7 @@ defmodule Jido.Amp.MixProject do
 
   @version "0.1.0"
   @source_url "https://github.com/agentjido/jido_amp"
-  @description "Amp CLI agent integration for the Jido ecosystem"
+  @description "Amp CLI adapter for Jido.Harness"
 
   def project do
     [
@@ -76,7 +76,6 @@ defmodule Jido.Amp.MixProject do
 
   defp runtime_deps do
     [
-      {:jido, "~> 2.0.0-rc.5"},
       {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
       harness_dep(),
       {:zoi, "~> 0.17"},

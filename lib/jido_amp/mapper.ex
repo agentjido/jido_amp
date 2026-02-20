@@ -30,7 +30,7 @@ defmodule Jido.Amp.Mapper do
     session_id = message.session_id
 
     events =
-      (message.message && message.message.content || [])
+      ((message.message && message.message.content) || [])
       |> Enum.flat_map(fn
         %TextContent{text: text} when is_binary(text) ->
           [build_event(:output_text_delta, session_id, %{"text" => text}, message)]

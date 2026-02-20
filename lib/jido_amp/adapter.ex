@@ -102,7 +102,8 @@ defmodule Jido.Amp.Adapter do
         %{
           "tool" => "amp",
           "when_missing" => true,
-          "command" => "if command -v npm >/dev/null 2>&1; then npm install -g @sourcegraph/amp; else echo 'npm not available'; exit 1; fi"
+          "command" =>
+            "if command -v npm >/dev/null 2>&1; then npm install -g @sourcegraph/amp; else echo 'npm not available'; exit 1; fi"
         }
       ],
       auth_bootstrap_steps: [],

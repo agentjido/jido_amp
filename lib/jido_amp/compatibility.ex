@@ -127,7 +127,7 @@ defmodule Jido.Amp.Compatibility do
                missing_flags: missing,
                remediation: [
                  "Install an Amp CLI version that supports --execute --stream-json.",
-                 "Use `mix amp.thread` for direct thread execution while compatibility is unresolved."
+                 "Re-run `mix amp.install` and `mix amp.compat` after upgrading the CLI."
                ]
              }
            }

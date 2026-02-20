@@ -157,25 +157,6 @@ defmodule Jido.AmpTest do
     end
   end
 
-  describe "helpers and curated delegates" do
-    test "create helpers delegate to sdk" do
-      assert %{type: "user", content: "hello"} = Jido.Amp.create_user_message("hello")
-
-      assert %{tool: "Read", action: "allow", opts: [to: "workspace"]} =
-               Jido.Amp.create_permission("Read", "allow", to: "workspace")
-    end
-
-    test "curated management operations delegate through modules" do
-      assert {:ok, {:threads_list, [limit: 5]}} = Jido.Amp.threads_list(limit: 5)
-      assert {:ok, {:threads_search, "bug", [limit: 2]}} = Jido.Amp.threads_search("bug", limit: 2)
-      assert {:ok, {:threads_markdown, "th_1"}} = Jido.Amp.threads_markdown("th_1")
-      assert {:ok, :tools_list} = Jido.Amp.tools_list()
-      assert {:ok, {:permissions_list, [scope: "workspace"]}} = Jido.Amp.permissions_list(scope: "workspace")
-      assert {:ok, {:mcp_list, [format: :parsed]}} = Jido.Amp.mcp_list(format: :parsed)
-      assert {:ok, :usage} = Jido.Amp.usage()
-    end
-  end
-
   defp restore_env(app, key, nil), do: Application.delete_env(app, key)
   defp restore_env(app, key, value), do: Application.put_env(app, key, value)
 end
