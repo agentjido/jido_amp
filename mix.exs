@@ -79,7 +79,7 @@ defmodule Jido.Amp.MixProject do
       {:jido, "~> 2.0.0-rc.5"},
       {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
       harness_dep(),
-      {:zoi, "~> 0.16"},
+      {:zoi, "~> 0.17"},
       {:splode, ">= 0.2.9 and < 0.4.0"},
       {:jason, "~> 1.4"}
     ]
