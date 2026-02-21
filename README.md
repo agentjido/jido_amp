@@ -67,3 +67,13 @@ mix quality
 ```
 
 See `guides/getting-started.md` for walkthrough details.
+
+## Package Purpose
+
+`jido_amp` is the Amp CLI adapter for `jido_harness`, focused on normalized event mapping and adapter/runtime contract compatibility.
+
+## Testing Paths
+
+- Unit/contract tests: `mix test`
+- Full quality gate: `mix quality`
+- Optional live checks: `mix amp.install && mix amp.compat`
