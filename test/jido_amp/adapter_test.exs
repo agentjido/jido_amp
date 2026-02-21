@@ -1,6 +1,12 @@
 defmodule Jido.Amp.AdapterTest do
   use ExUnit.Case, async: false
 
+  use Jido.Harness.AdapterContract,
+    adapter: Jido.Amp.Adapter,
+    provider: :amp,
+    check_run: true,
+    run_request: %{prompt: "contract amp run", cwd: "/repo", metadata: %{}}
+
   alias AmpSdk.Types.{AssistantMessage, AssistantPayload, ResultMessage, SystemMessage, TextContent}
   alias Jido.Amp.Adapter
   alias Jido.Amp.Test.StubAmpSdk
