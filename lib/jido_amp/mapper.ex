@@ -16,6 +16,9 @@ defmodule Jido.Amp.Mapper do
 
   alias Jido.Harness.Event
 
+  @doc """
+  Maps a single Amp SDK message into one or more normalized harness events.
+  """
   @spec map_event(term()) :: {:ok, [Event.t()]} | {:error, term()}
   def map_event(%SystemMessage{} = message) do
     payload = %{
@@ -92,7 +95,7 @@ defmodule Jido.Amp.Mapper do
       provider: :amp,
       session_id: session_id,
       timestamp: DateTime.utc_now() |> DateTime.to_iso8601(),
-      payload: stringify_keys(payload || %{}),
+      payload: stringify_keys(payload),
       raw: raw
     })
   end

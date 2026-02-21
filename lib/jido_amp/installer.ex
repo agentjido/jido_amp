@@ -6,6 +6,9 @@ defmodule Jido.Amp.Installer do
 
   @npm_package "@sourcegraph/amp"
 
+  @doc """
+  Ensures Amp CLI is installed, installing it when not already available.
+  """
   @spec ensure_installed(keyword()) :: {:ok, map()} | {:error, Jido.Amp.Error.ConfigError.t()}
   def ensure_installed(opts \\ []) when is_list(opts) do
     force? = Keyword.get(opts, :force, false)
@@ -23,6 +26,9 @@ defmodule Jido.Amp.Installer do
     end
   end
 
+  @doc """
+  Installs Amp CLI via npm into the configured install prefix.
+  """
   @spec install(keyword()) :: {:ok, map()} | {:error, Jido.Amp.Error.ConfigError.t()}
   def install(opts \\ []) when is_list(opts) do
     install_path = CLI.install_path(opts)
