@@ -80,3 +80,23 @@ See `guides/getting-started.md` for walkthrough details.
 - Unit/contract tests: `mix test`
 - Full quality gate: `mix quality`
 - Optional live checks: `mix amp.install && mix amp.compat`
+
+## Live Integration Tests
+
+`jido_amp` includes opt-in live tests that run the real Amp CLI through both the compatibility probe and the harness adapter path:
+
+```bash
+mix test --include integration test/jido_amp/integration/compatibility_integration_test.exs
+mix test --include integration test/jido_amp/integration/adapter_live_integration_test.exs
+```
+
+The tests auto-load `.env` and are excluded from default `mix test` runs.
+
+Environment knobs:
+
+- `AMP_API_KEY` for Amp auth
+- `JIDO_AMP_LIVE_PROMPT` to override the default prompt
+- `JIDO_AMP_LIVE_CWD` to override the working directory
+- `JIDO_AMP_LIVE_TIMEOUT_MS` to extend the per-run timeout
+- `JIDO_AMP_REQUIRE_SUCCESS=1` to fail unless the terminal event is successful
+- `JIDO_AMP_CLI_PATH` to target a non-default Amp CLI binary
