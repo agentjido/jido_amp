@@ -6,12 +6,13 @@ This guide covers adapter-focused `Jido.Amp` flows:
 
 ## 1. Install and Verify
 
-Add dependency:
+Add dependencies:
 
 ```elixir
 defp deps do
   [
-    {:jido_amp, "~> 0.1.0"}
+    {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
+    {:jido_amp, github: "agentjido/jido_amp", branch: "main"}
   ]
 end
 ```

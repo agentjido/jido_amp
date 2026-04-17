@@ -12,10 +12,13 @@ It provides:
 ```elixir
 defp deps do
   [
-    {:jido_amp, "~> 0.1.0"}
+    {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
+    {:jido_amp, github: "agentjido/jido_amp", branch: "main"}
   ]
 end
 ```
+
+This repo is currently aligned as part of the GitHub-based harness package set rather than a Hex release line.
 
 Then:
 
