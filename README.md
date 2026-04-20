@@ -94,7 +94,7 @@ The tests auto-load `.env` and are excluded from default `mix test` runs.
 
 Environment knobs:
 
-- `AMP_API_KEY` for Amp auth
+- `AMP_API_KEY` when using env-based Amp auth
 - `JIDO_AMP_LIVE_PROMPT` to override the default prompt
 - `JIDO_AMP_LIVE_CWD` to override the working directory
 - `JIDO_AMP_LIVE_TIMEOUT_MS` to extend the per-run timeout

@@ -19,8 +19,7 @@ defmodule Jido.Amp.LiveIntegrationCase do
   def skip_reason do
     ensure_env_loaded()
 
-    missing_auth_reason() ||
-      cli_skip_reason() ||
+    cli_skip_reason() ||
       compatibility_skip_reason()
   end
 
@@ -58,14 +57,6 @@ defmodule Jido.Amp.LiveIntegrationCase do
       no_color: true,
       stream_timeout_ms: env_integer("JIDO_AMP_LIVE_TIMEOUT_MS", 180_000)
     )
-  end
-
-  defp missing_auth_reason do
-    if env_value("AMP_API_KEY") do
-      nil
-    else
-      "set AMP_API_KEY to run Amp integration tests"
-    end
   end
 
   defp cli_skip_reason do
