@@ -19,7 +19,8 @@ defmodule Jido.Amp.MixProject do
       homepage_url: @source_url,
       docs: [
         main: "Jido.Amp",
-        extras: ["README.md", "CHANGELOG.md", "guides/getting-started.md"],
+        source_ref: "v#{@version}",
+        extras: ["README.md", "CHANGELOG.md", "CONTRIBUTING.md", "LICENSE", "guides/getting-started.md"],
         formatters: ["html"]
       ],
       dialyzer: [
@@ -27,7 +28,8 @@ defmodule Jido.Amp.MixProject do
       ],
       test_coverage: [
         tool: ExCoveralls,
-        summary: [threshold: 90]
+        summary: [threshold: 90],
+        export: "cov"
       ],
       description: @description,
       package: [
@@ -45,8 +47,15 @@ defmodule Jido.Amp.MixProject do
           "mix.exs",
           "usage-rules.md"
         ],
+        maintainers: ["Agent Jido Team"],
         licenses: ["Apache-2.0"],
-        links: %{"GitHub" => @source_url}
+        links: %{
+          "Changelog" => "https://github.com/agentjido/jido_amp/blob/main/CHANGELOG.md",
+          "Discord" => "https://jido.run/discord",
+          "Documentation" => "https://hexdocs.pm/jido_amp",
+          "GitHub" => @source_url,
+          "Website" => "https://jido.run"
+        }
       ]
     ]
   end
@@ -98,7 +107,8 @@ defmodule Jido.Amp.MixProject do
 
   defp aliases do
     [
-      setup: ["deps.get", "git_hooks.install"],
+      setup: ["deps.get"],
+      install_hooks: ["git_hooks.install"],
       q: ["quality"],
       quality: [
         "format --check-formatted",
