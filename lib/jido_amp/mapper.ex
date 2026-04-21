@@ -100,6 +100,12 @@ defmodule Jido.Amp.Mapper do
     })
   end
 
+  defp stringify_keys(%{__struct__: _} = struct) do
+    struct
+    |> Map.from_struct()
+    |> stringify_keys()
+  end
+
   defp stringify_keys(map) when is_map(map) do
     map
     |> Enum.map(fn {k, v} -> {to_string(k), stringify_keys(v)} end)
