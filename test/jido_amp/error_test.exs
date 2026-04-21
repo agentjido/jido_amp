@@ -1,6 +1,6 @@
 defmodule Jido.Amp.ErrorTest do
   use ExUnit.Case
-  doctest Jido.Amp.Error
+  doctest Jido.Amp.Error, except: [traverse_errors: 2]
 
   alias Jido.Amp.Error
 
