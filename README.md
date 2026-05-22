@@ -1,5 +1,13 @@
 # Jido.Amp
 
+[![Hex.pm](https://img.shields.io/hexpm/v/jido_amp.svg)](https://hex.pm/packages/jido_amp)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/jido_amp/)
+[![CI](https://github.com/agentjido/jido_amp/actions/workflows/ci.yml/badge.svg)](https://github.com/agentjido/jido_amp/actions/workflows/ci.yml)
+[![License](https://img.shields.io/hexpm/l/jido_amp.svg)](https://github.com/agentjido/jido_amp/blob/main/LICENSE)
+[![Website](https://img.shields.io/badge/website-jido.run-0f172a.svg)](https://jido.run)
+[![Ecosystem](https://img.shields.io/badge/ecosystem-jido.run-0ea5e9.svg)](https://jido.run/ecosystem)
+[![Discord](https://img.shields.io/badge/discord-join-5865F2.svg?logo=discord&logoColor=white)](https://jido.run/discord)
+
 `Jido.Amp` is an Amp CLI adapter package for `Jido.Harness`.
 
 It provides:
