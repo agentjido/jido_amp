@@ -50,4 +50,5 @@ Coverage threshold is enforced in project config (>=90%).
 ## Commits
 
 - Use conventional commits: `type(scope): description`
+- Do not modify `CHANGELOG.md`; release notes are generated from Git history during release, so keep changes focused on proper Conventional Commits.
 - Never include `ampcode` as a contributor/co-author
