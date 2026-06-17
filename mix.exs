@@ -85,7 +85,7 @@ defmodule Jido.Amp.MixProject do
 
   defp runtime_deps do
     [
-      {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "master"},
+      {:amp_sdk, github: "nshkrdotcom/amp_sdk", branch: "main"},
       {:jido_harness, github: "agentjido/jido_harness", branch: "main", override: true},
       {:zoi, "~> 0.17"},
       {:splode, ">= 0.2.9 and < 0.4.0"},
